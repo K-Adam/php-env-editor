@@ -15,9 +15,9 @@ class Variable extends Block {
   /** @var Value */
   public $value;
 
-  function __construct() {
-    $this->key = new Key();
-    $this->value = new Value();
+  function __construct(Key $key = null, Value $value = null) {
+    $this->key = $key ?? new Key();
+    $this->value = $value ?? new Value();
   }
 
   public function visit(Visitor $visitor) {

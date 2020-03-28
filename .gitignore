@@ -1,0 +1,7 @@
+/vendor
+
+*.bak
+
+.phpunit.result.cache
+
+.tmp

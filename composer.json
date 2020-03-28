@@ -1,0 +1,34 @@
+{
+    "name": "k-adam/env-editor",
+    "description": ".env editor library",
+    "type": "library",
+    "keywords": [
+        "env", "env-editor", "dot-env", "env-php", "env-loader", "env-writer"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Adam Kecskes",
+            "email": "kecskes.adam@outlook.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "EnvEditor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^7.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.5"
+    },
+    "scripts": {
+        "test": "phpunit"
+    }
+}

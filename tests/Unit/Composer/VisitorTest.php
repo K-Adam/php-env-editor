@@ -13,7 +13,7 @@ use EnvEditor\EnvFile\Block\Variable\Value as VariableValue;
 
 class VisitorTest extends TestCase {
 
-  public function testComment() {
+  public function testComment(): void {
     $visitor = new Visitor();
 
     $comment = new CommentBlock();
@@ -23,7 +23,7 @@ class VisitorTest extends TestCase {
     $this->assertEquals(["#foo"], $visitor->results);
   }
 
-  public function testVariable() {
+  public function testVariable(): void {
     $visitor = new Visitor();
 
     $variable = new VariableBlock();
@@ -37,7 +37,7 @@ class VisitorTest extends TestCase {
   /**
    * @depends testVariable
    */
-  public function testQuotedVariable() {
+  public function testQuotedVariable(): void {
     $visitor = new Visitor();
 
     $variable = new VariableBlock();
@@ -52,7 +52,7 @@ class VisitorTest extends TestCase {
   /**
    * @depends testVariable
    */
-  public function testPaddedVariable() {
+  public function testPaddedVariable(): void {
     $visitor = new Visitor();
 
     $variable = new VariableBlock();

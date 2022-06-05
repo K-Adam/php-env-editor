@@ -6,11 +6,9 @@ class Value {
 
   use Padded;
 
-  /** @var string */
-  public $content="";
+  public string $content="";
 
-  /** @var string */
-  public $quote="";
+  public string $quote="";
 
   function __construct(string $content = "") {
     $this->setContent($content);
@@ -21,7 +19,8 @@ class Value {
   }
 
   /** Adds quotes if necessary */
-  public function setContent(string $content) {
+  public function setContent(string $content): void
+  {
     $this->content = $content;
 
     if(preg_match('/\s/s', $content)) {

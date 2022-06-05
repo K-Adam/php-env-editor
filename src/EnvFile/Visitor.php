@@ -8,8 +8,8 @@ use EnvEditor\EnvFile\Block\Unknown as UnknownBlock;
 
 abstract class Visitor {
 
-  public function visitComment(CommentBlock $block){}
-  public function visitVariable(VariableBlock $block){}
-  public function visitUnknown(UnknownBlock $block){}
+  public function visitComment(CommentBlock $block): void {}
+  public function visitVariable(VariableBlock $block): void {}
+  public function visitUnknown(UnknownBlock $block): void {}
 
 }

@@ -4,6 +4,6 @@ namespace EnvEditor\EnvFile;
 
 abstract class Block {
 
-  abstract public function visit(Visitor $visitor);
+  abstract public function visit(Visitor $visitor): void;
 
 }

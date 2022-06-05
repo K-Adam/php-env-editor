@@ -7,14 +7,10 @@ use EnvEditor\EnvFile\Visitor;
 
 class Unknown extends Block {
 
-  /** @var string */
-  public $content="";
-
-  function __construct($content = "") {
-    $this->content = $content;
+  function __construct(public string $content = "") {
   }
 
-  public function visit(Visitor $visitor) {
+  public function visit(Visitor $visitor): void {
     $visitor->visitUnknown($this);
   }
 

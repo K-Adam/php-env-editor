@@ -11,8 +11,7 @@ use EnvEditor\EnvFile\Block\Variable as VariableBlock;
 
 class VisitorTest extends TestCase {
 
-  /** @var EnvFile */
-  private $file;
+  private EnvFile $file;
 
   protected function setUp(): void {
     $this->file = new EnvFile();
@@ -24,12 +23,12 @@ class VisitorTest extends TestCase {
     $this->file->blocks = [$b1, $b2, $b3];
   }
 
-  public function testAllVisited() {
+  public function testAllVisited(): void {
     $visitor = new class extends Visitor {
-      public $visited = [];
+      public array $visited = [];
 
-      public function visitComment(CommentBlock $block){$this->visited[] = $block;}
-      public function visitVariable(VariableBlock $block){$this->visited[] = $block;}
+      public function visitComment(CommentBlock $block): void {$this->visited[] = $block;}
+      public function visitVariable(VariableBlock $block): void {$this->visited[] = $block;}
     };
 
     $this->file->visitBlocks($visitor);

@@ -11,7 +11,7 @@ use EnvEditor\EnvFile\Block\Comment as CommentBlock;
 
 class ComposerTest extends TestCase {
 
-  public function testCompose() {
+  public function testCompose(): void {
     $composer = new Composer();
     $file = new EnvFile();
 
@@ -22,7 +22,7 @@ class ComposerTest extends TestCase {
     $this->assertEquals("#test1\n#test2", $result);
   }
 
-  public function testEOL() {
+  public function testEOL(): void {
     $composer = new Composer();
     $file = new EnvFile();
 

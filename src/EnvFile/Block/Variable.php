@@ -9,18 +9,16 @@ use EnvEditor\EnvFile\Block\Variable\Value;
 
 class Variable extends Block {
 
-  /** @var Key */
-  public $key;
+  public Key $key;
+  public Value $value;
 
-  /** @var Value */
-  public $value;
-
+  // TODO: Use property promotion in 8.1
   function __construct(Key $key = null, Value $value = null) {
     $this->key = $key ?? new Key();
     $this->value = $value ?? new Value();
   }
 
-  public function visit(Visitor $visitor) {
+  public function visit(Visitor $visitor): void {
     $visitor->visitVariable($this);
   }
 

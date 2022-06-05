@@ -6,11 +6,7 @@ class Key {
 
   use Padded;
 
-  /** @var string */
-  public $content="";
-
-  function __construct($content = "") {
-    $this->content = $content;
+  function __construct(public string $content = "") {
   }
 
   public function __toString() {

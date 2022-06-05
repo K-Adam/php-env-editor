@@ -4,17 +4,19 @@ namespace EnvEditor;
 
 use EnvEditor\Composer\Visitor;
 
-class Composer {
+class Composer
+{
 
-  public ?string $EOL = null;
+    public ?string $EOL = null;
 
-  public function compose(EnvFile $file): string {
-    $visitor = new Visitor();
+    public function compose(EnvFile $file): string
+    {
+        $visitor = new Visitor();
 
-    $file->visitBlocks($visitor);
+        $file->visitBlocks($visitor);
 
-    $EOL = $this->EOL ?? $file->EOL;
-    return implode($EOL, $visitor->results);
-  }
+        $EOL = $this->EOL ?? $file->EOL;
+        return implode($EOL, $visitor->results);
+    }
 
 }

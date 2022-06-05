@@ -2,9 +2,10 @@
 
 namespace EnvEditor\EnvFile\Block\Variable;
 
-trait Padded {
+trait Padded
+{
 
-  public string $leftPad="";
-  public string $rightPad="";
+    public string $leftPad = "";
+    public string $rightPad = "";
 
 }

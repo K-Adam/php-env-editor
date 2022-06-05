@@ -2,8 +2,9 @@
 
 namespace EnvEditor\EnvFile;
 
-abstract class Block {
+abstract class Block
+{
 
-  abstract public function visit(Visitor $visitor): void;
+    abstract public function visit(Visitor $visitor): void;
 
 }

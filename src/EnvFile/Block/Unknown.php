@@ -5,13 +5,16 @@ namespace EnvEditor\EnvFile\Block;
 use EnvEditor\EnvFile\Block;
 use EnvEditor\EnvFile\Visitor;
 
-class Unknown extends Block {
+class Unknown extends Block
+{
 
-  function __construct(public string $content = "") {
-  }
+    function __construct(public string $content = "")
+    {
+    }
 
-  public function visit(Visitor $visitor): void {
-    $visitor->visitUnknown($this);
-  }
+    public function visit(Visitor $visitor): void
+    {
+        $visitor->visitUnknown($this);
+    }
 
 }

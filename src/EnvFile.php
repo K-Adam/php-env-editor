@@ -3,107 +3,115 @@
 namespace EnvEditor;
 
 use EnvEditor\EnvFile\Block;
-use EnvEditor\EnvFile\Visitor;
-use EnvEditor\EnvFile\EOLType;
 use EnvEditor\EnvFile\Block\Variable as VariableBlock;
+use EnvEditor\EnvFile\EOLType;
+use EnvEditor\EnvFile\Visitor;
 
-class EnvFile {
+class EnvFile
+{
 
-  public string $EOL = "\n";
+    public string $EOL = "\n";
 
-  /** @var Block[] */
-  public array $blocks = [];
+    /** @var Block[] */
+    public array $blocks = [];
 
-  function __construct() {
-    $this->EOL = EOLType::UNIX;
-  }
-
-  public function visitBlocks(Visitor $visitor): void
-  {
-    foreach($this->blocks as $block) {
-      $block->visit($visitor);
-    }
-  }
-
-  /**
-   * @return VariableBlock[]
-   */
-  public function getVariableBlocks(): array {
-    return array_values(array_filter($this->blocks, function($block){
-      return $block instanceof VariableBlock;
-    }));
-  }
-
-  public function findVariable(string $key): ?VariableBlock {
-    foreach($this->getVariableBlocks() as $block) {
-      if($block->key == $key) {
-        return $block;
-      }
+    function __construct()
+    {
+        $this->EOL = EOLType::UNIX;
     }
 
-    return null;
-  }
+    public static function loadFrom(string $path): EnvFile
+    {
+        $parser = new Parser();
+        $content = file_get_contents($path);
 
-  public function putVariable(VariableBlock $variable): void
-  {
-    foreach($this->blocks as $i => $block) {
-
-      if(!$block instanceof VariableBlock) continue;
-
-      if($block->key->content == $variable->key->content) {
-        $this->blocks[$i] = $variable;
-        return;
-      }
+        return $parser->parse($content);
     }
 
-    $this->blocks[] = $variable;
-  }
-
-  public function removeVariableKey(string $key): ?VariableBlock {
-    $variable = $this->findVariable($key);
-    if(!$variable) return null;
-
-    $index = array_search($variable, $this->blocks);
-    array_splice($this->blocks, $index, 1);
-    return $variable;
-  }
-
-  public function getValue(string $key): string {
-    $variable = $this->findVariable($key);
-
-    return $variable ? $variable->value->content : "";
-  }
-
-  public function setValue(string $key, string $content): void
-  {
-    $variable = $this->findVariable($key);
-    if(!$variable) {
-      $variable = new VariableBlock();
-      $variable->key->content = $key;
-
-      $this->blocks[] = $variable;
+    public function visitBlocks(Visitor $visitor): void
+    {
+        foreach ($this->blocks as $block) {
+            $block->visit($visitor);
+        }
     }
 
-    $variable->value->setContent($content);
-  }
+    public function putVariable(VariableBlock $variable): void
+    {
+        foreach ($this->blocks as $i => $block) {
 
-  // Utility methods
+            if (!$block instanceof VariableBlock) continue;
 
-  public static function loadFrom(string $path): EnvFile {
-    $parser = new Parser();
-    $content = file_get_contents($path);
+            if ($block->key->content == $variable->key->content) {
+                $this->blocks[$i] = $variable;
+                return;
+            }
+        }
 
-    return $parser->parse($content);
-  }
+        $this->blocks[] = $variable;
+    }
 
-  public function saveTo(string $path): void {
-    $composer = new Composer();
-    $content = $composer->compose($this);
+    public function removeVariableKey(string $key): ?VariableBlock
+    {
+        $variable = $this->findVariable($key);
+        if (!$variable) return null;
 
-    file_put_contents($path, $content);
-  }
+        $index = array_search($variable, $this->blocks);
+        array_splice($this->blocks, $index, 1);
+        return $variable;
+    }
 
-  // Private methods
+    public function findVariable(string $key): ?VariableBlock
+    {
+        foreach ($this->getVariableBlocks() as $block) {
+            if ($block->key == $key) {
+                return $block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return VariableBlock[]
+     */
+    public function getVariableBlocks(): array
+    {
+        return array_values(array_filter($this->blocks, function ($block) {
+            return $block instanceof VariableBlock;
+        }));
+    }
+
+    public function getValue(string $key): string
+    {
+        $variable = $this->findVariable($key);
+
+        return $variable ? $variable->value->content : "";
+    }
+
+    // Utility methods
+
+    public function setValue(string $key, string $content): void
+    {
+        $variable = $this->findVariable($key);
+        if (!$variable) {
+            $variable = new VariableBlock();
+            $variable->key->content = $key;
+
+            $this->blocks[] = $variable;
+        }
+
+        $variable->value->setContent($content);
+    }
+
+    public function saveTo(string $path): void
+    {
+        $composer = new Composer();
+        $content = $composer->compose($this);
+
+        file_put_contents($path, $content);
+    }
+
+    // Private methods
 
 
 }

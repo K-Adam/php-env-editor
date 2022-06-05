@@ -2,15 +2,18 @@
 
 namespace EnvEditor\EnvFile\Block\Variable;
 
-class Key {
+class Key
+{
 
-  use Padded;
+    use Padded;
 
-  function __construct(public string $content = "") {
-  }
+    function __construct(public string $content = "")
+    {
+    }
 
-  public function __toString() {
-    return $this->content;
-  }
+    public function __toString()
+    {
+        return $this->content;
+    }
 
 }

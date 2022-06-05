@@ -2,42 +2,30 @@
 
 namespace Tests\Unit;
 
-use EnvEditor\EnvFile\EOLType;
 use EnvEditor\Parser;
 use Tests\TestCase;
 
 class ParserTest extends TestCase
 {
-    
-    public function testFileEOLType(): void
+
+    private Parser $parser;
+
+    private string $newLine = "[TEST_EOL]";
+
+    protected function setUp(): void
     {
+        parent::setUp();
 
-        $parser = new Parser();
-
-        $win = "#test\r\n#test";
-        $unix = "#test\n#test";
-
-        $this->assertEquals(EOLType::WINDOWS, $parser->parse($win)->EOL);
-        $this->assertEquals(EOLType::UNIX, $parser->parse($unix)->EOL);
-
-        $parser->EOL = EOLType::UNIX;
-
-        $this->assertEquals(EOLType::UNIX, $parser->parse($win)->EOL);
-
+        $detector = $this->createMock(Parser\EOLTypeDetector::class);
+        $detector->method('detect')->willReturn($this->newLine);
+        $this->parser = new Parser($detector);
     }
 
-    /**
-     * @depends testFileEOLType
-     */
     public function testSimpleBlockCount(): void
     {
-        $parser = new Parser();
+        $content = "#test{$this->newLine}#test";
 
-        $win = "#test\r\n#test";
-        $unix = "#test\n#test";
-
-        $this->assertCount(2, $parser->parse($win)->blocks);
-        $this->assertCount(2, $parser->parse($unix)->blocks);
+        $this->assertCount(2, $this->parser->parse($content)->blocks);
     }
 
     /**
@@ -45,13 +33,11 @@ class ParserTest extends TestCase
      */
     public function testComplexBlockCount(): void
     {
-        $parser = new Parser();
+        $multilineString = "#test{$this->newLine}X=VALUE{$this->newLine}Y='foo bar'{$this->newLine}Z=\"foo{$this->newLine}bar\"";
+        $this->assertCount(4, $this->parser->parse($multilineString)->blocks);
 
-        $multilineString = "#test\nX=VALUE\nY='foo bar'\nZ=\"foo\nbar\"";
-        $this->assertCount(4, $parser->parse($multilineString)->blocks);
-
-        $invalidValueString = "#test\nX=VALUE\nfoo bar";
-        $this->assertCount(3, $parser->parse($invalidValueString)->blocks);
+        $invalidValueString = "#test{$this->newLine}X=VALUE{$this->newLine}foo bar";
+        $this->assertCount(3, $this->parser->parse($invalidValueString)->blocks);
     }
 
     /**
@@ -59,9 +45,7 @@ class ParserTest extends TestCase
      */
     public function testCommentBlockText(): void
     {
-        $parser = new Parser();
-
-        $blocks = $parser->parse("#test1\n#test2")->blocks;
+        $blocks = $this->parser->parse("#test1{$this->newLine}#test2")->blocks;
 
         $this->assertEquals("test1", $blocks[0]->text);
         $this->assertEquals("test2", $blocks[1]->text);
@@ -73,10 +57,8 @@ class ParserTest extends TestCase
      */
     public function testVariableBlockContent(): void
     {
-        $parser = new Parser();
-
-        $multilineString = "X=VALUE\nY='foo bar'\nZ=\"foo\nbar\"";
-        $blocks = $parser->parse($multilineString)->blocks;
+        $multilineString = "X=VALUE{$this->newLine}Y='foo bar'{$this->newLine}Z=\"foo{$this->newLine}bar\"";
+        $blocks = $this->parser->parse($multilineString)->blocks;
 
         $this->assertEquals("X", $blocks[0]->key);
         $this->assertEquals("VALUE", $blocks[0]->value);
@@ -86,7 +68,7 @@ class ParserTest extends TestCase
         $this->assertEquals("'", $blocks[1]->value->quote);
 
         $this->assertEquals("Z", $blocks[2]->key);
-        $this->assertEquals("foo\nbar", $blocks[2]->value);
+        $this->assertEquals("foo{$this->newLine}bar", $blocks[2]->value);
         $this->assertEquals('"', $blocks[2]->value->quote);
 
     }
@@ -96,9 +78,7 @@ class ParserTest extends TestCase
      */
     public function testVariableWhiteSpaces(): void
     {
-        $parser = new Parser();
-
-        $blocks = $parser->parse("X =foo\n\tY = 'bar'  ")->blocks;
+        $blocks = $this->parser->parse("X =foo{$this->newLine}\tY = 'bar'  ")->blocks;
 
         $this->assertEquals("X", $blocks[0]->key);
         $this->assertEquals("foo", $blocks[0]->value);
@@ -122,8 +102,7 @@ class ParserTest extends TestCase
      */
     public function testUnknown(): void
     {
-        $parser = new Parser();
-        $blocks = $parser->parse("???")->blocks;
+        $blocks = $this->parser->parse("???")->blocks;
         $this->assertEquals("???", $blocks[0]->content);
     }
 
@@ -132,8 +111,7 @@ class ParserTest extends TestCase
      */
     public function testEmpty(): void
     {
-        $parser = new Parser();
-        $blocks = $parser->parse("#test\n\n#test")->blocks;
+        $blocks = $this->parser->parse("#test{$this->newLine}{$this->newLine}#test")->blocks;
         $this->assertEquals("", $blocks[1]->content);
     }
 
@@ -142,16 +120,13 @@ class ParserTest extends TestCase
      */
     public function testEmptyLast(): void
     {
-        $parser = new Parser();
-        $blocks = $parser->parse("#test\n")->blocks;
+        $blocks = $this->parser->parse("#test{$this->newLine}")->blocks;
         $this->assertEquals("", $blocks[1]->content);
     }
 
     public function testEmptyFile(): void
     {
-        $parser = new Parser();
-
-        $blocks = $parser->parse("")->blocks;
+        $blocks = $this->parser->parse("")->blocks;
 
         $this->assertCount(1, $blocks);
         $this->assertEquals("", $blocks[0]->content);

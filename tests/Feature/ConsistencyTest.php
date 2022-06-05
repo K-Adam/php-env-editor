@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use EnvEditor\Composer;
 use EnvEditor\EnvFile;
 use EnvEditor\Parser;
+use EnvEditor\Parser\EOLTypeDetector;
 use Tests\TestCase;
 
 class ConsistencyTest extends TestCase
@@ -12,7 +13,7 @@ class ConsistencyTest extends TestCase
 
     public function testKeepEOL()
     {
-        $parser = new Parser();
+        $parser = new Parser(new EOLTypeDetector());
         $composer = new Composer();
 
         $contentUnix = "#test\n#test";
@@ -28,7 +29,7 @@ class ConsistencyTest extends TestCase
     public function testComplexFile()
     {
 
-        $parser = new Parser();
+        $parser = new Parser(new EOLTypeDetector());
         $composer = new Composer();
 
         $content = file_get_contents(__DIR__ . "/Asset/example.env");

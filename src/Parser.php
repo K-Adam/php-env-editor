@@ -8,27 +8,32 @@ use EnvEditor\EnvFile\Block\Variable as VariableBlock;
 use EnvEditor\EnvFile\Block\Variable\Key as VariableKey;
 use EnvEditor\EnvFile\Block\Variable\Value as VariableValue;
 use EnvEditor\EnvFile\EOLType;
+use EnvEditor\Parser\EOLTypeDetector;
 
 class Parser
 {
 
-    public ?string $EOL = null;
+
+    public function __construct(private EOLTypeDetector $EOLTypeDetector)
+    {
+    }
 
     public function parse(string $content): EnvFile
     {
 
         $file = new EnvFile();
 
-        $file->EOL = $this->EOL ?? EOLType::detect($content);
+        $file->EOL = $this->EOLTypeDetector->detect($content);
+        $pregEOL = preg_quote($file->EOL);
 
         $blockStart = "^";
-        $blockEnd = "(?:{$file->EOL}|$)";
-        $notEOLChar = "(?:(?!{$file->EOL}).)";
-        $notEOLWhiteSpace = "(?:(?!{$file->EOL})\s)";
+        $blockEnd = "(?:$pregEOL|$)";
+        $notEOLChar = "(?:(?!$pregEOL).)";
+        $notEOLWhiteSpace = "(?:(?!$pregEOL)\s)";
 
         $comment = "#($notEOLChar*)";
 
-        $notEOLNotSingleQuote = "(?:(?!{$file->EOL})[^'])";
+        $notEOLNotSingleQuote = "(?:(?!$pregEOL)[^'])";
         $notDoubleQuote = "[^\"]";
 
         $variableKey = "[a-zA-Z0-9_.]+";

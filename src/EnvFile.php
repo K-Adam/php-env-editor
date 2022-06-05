@@ -6,23 +6,21 @@ use EnvEditor\EnvFile\Block;
 use EnvEditor\EnvFile\Block\Variable as VariableBlock;
 use EnvEditor\EnvFile\EOLType;
 use EnvEditor\EnvFile\Visitor;
+use EnvEditor\Parser\EOLTypeDetector;
 
 class EnvFile
 {
 
-    public string $EOL = "\n";
-
     /** @var Block[] */
     public array $blocks = [];
 
-    function __construct()
+    function __construct(public string $EOL = EOLType::UNIX)
     {
-        $this->EOL = EOLType::UNIX;
     }
 
     public static function loadFrom(string $path): EnvFile
     {
-        $parser = new Parser();
+        $parser = new Parser(new EOLTypeDetector());
         $content = file_get_contents($path);
 
         return $parser->parse($content);

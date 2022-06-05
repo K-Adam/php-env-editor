@@ -3,7 +3,12 @@
     "description": ".env editor library",
     "type": "library",
     "keywords": [
-        "env", "env-editor", "dot-env", "env-php", "env-loader", "env-writer"
+        "env",
+        "env-editor",
+        "dot-env",
+        "env-php",
+        "env-loader",
+        "env-writer"
     ],
     "license": "MIT",
     "authors": [
@@ -29,6 +34,10 @@
         "phpunit/phpunit": "9.5"
     },
     "scripts": {
-        "test": "phpunit"
+        "test": "phpunit",
+        "test:coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit --coverage-html coverage --coverage-clover=coverage/clover.xml"
+        ]
     }
 }

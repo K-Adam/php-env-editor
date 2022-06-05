@@ -12,8 +12,7 @@ use EnvEditor\EnvFile\Block\Variable\Value as VariableValue;
 
 class Parser {
 
-  /** @var string|null */
-  public $EOL = null;
+  public ?string $EOL = null;
 
   public function parse(string $content): EnvFile {
 
@@ -97,7 +96,7 @@ class Parser {
 
     }
 
-    if((substr($matchedString, -strlen($file->EOL)) === $file->EOL) || strlen($content) == 0) {
+    if((str_ends_with($matchedString, $file->EOL)) || strlen($content) == 0) {
       $file->blocks[] = new UnknownBlock();
     }
 
@@ -105,11 +104,12 @@ class Parser {
 
   }
 
-  public function detectEOLType(string $content, string $default = EOLType::UNIX) {
+  public function detectEOLType(string $content, string $default = EOLType::UNIX): string
+  {
 
-    if (strpos($content, EOLType::WINDOWS) !== false) {
+    if (str_contains($content, EOLType::WINDOWS)) {
       return EOLType::WINDOWS;
-    } elseif (strpos($content, EOLType::UNIX) !== false) {
+    } elseif (str_contains($content, EOLType::UNIX)) {
       return EOLType::UNIX;
     }
 

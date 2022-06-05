@@ -2,7 +2,7 @@
 
 namespace EnvEditor\EnvFile;
 
-abstract class EOLType {
+final class EOLType {
 
   const WINDOWS = "\r\n";
   const UNIX = "\n";

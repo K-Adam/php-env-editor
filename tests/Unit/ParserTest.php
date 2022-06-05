@@ -9,7 +9,7 @@ use EnvEditor\EnvFile\EOLType;
 
 class ParserTest extends TestCase {
 
-  public function testDetectEOLType() {
+  public function testDetectEOLType(): void {
     $parser = new Parser();
 
     $win = "#test\r\n#test";
@@ -27,7 +27,7 @@ class ParserTest extends TestCase {
   /**
    * @depends testDetectEOLType
    */
-  public function testFileEOLType() {
+  public function testFileEOLType(): void {
 
     $parser = new Parser();
 
@@ -46,33 +46,33 @@ class ParserTest extends TestCase {
   /**
    * @depends testFileEOLType
    */
-  public function testSimpleBlockCount() {
+  public function testSimpleBlockCount(): void {
     $parser = new Parser();
 
     $win = "#test\r\n#test";
     $unix = "#test\n#test";
 
-    $this->assertEquals(2, count($parser->parse($win)->blocks));
-    $this->assertEquals(2, count($parser->parse($unix)->blocks));
+    $this->assertCount(2, $parser->parse($win)->blocks);
+    $this->assertCount(2, $parser->parse($unix)->blocks);
   }
 
   /**
    * @depends testSimpleBlockCount
    */
-  public function testComplexBlockCount() {
+  public function testComplexBlockCount(): void {
     $parser = new Parser();
 
     $multilineString = "#test\nX=VALUE\nY='foo bar'\nZ=\"foo\nbar\"";
-    $this->assertEquals(4, count($parser->parse($multilineString)->blocks));
+    $this->assertCount(4, $parser->parse($multilineString)->blocks);
 
     $invalidValueString = "#test\nX=VALUE\nfoo bar";
-    $this->assertEquals(3, count($parser->parse($invalidValueString)->blocks));
+    $this->assertCount(3, $parser->parse($invalidValueString)->blocks);
   }
 
   /**
    * @depends testSimpleBlockCount
    */
-  public function testCommentBlockText() {
+  public function testCommentBlockText(): void {
     $parser = new Parser();
 
     $blocks = $parser->parse("#test1\n#test2")->blocks;
@@ -85,7 +85,7 @@ class ParserTest extends TestCase {
   /**
    * @depends testComplexBlockCount
    */
-  public function testVariableBlockContent() {
+  public function testVariableBlockContent(): void {
     $parser = new Parser();
 
     $multilineString = "X=VALUE\nY='foo bar'\nZ=\"foo\nbar\"";
@@ -107,7 +107,7 @@ class ParserTest extends TestCase {
   /**
    * @depends testSimpleBlockCount
    */
-  public function testVariableWhiteSpaces() {
+  public function testVariableWhiteSpaces(): void {
     $parser = new Parser();
 
     $blocks = $parser->parse("X =foo\n\tY = 'bar'  ")->blocks;
@@ -132,7 +132,7 @@ class ParserTest extends TestCase {
   /**
    * @depends testSimpleBlockCount
    */
-  public function testUnknown() {
+  public function testUnknown(): void {
     $parser = new Parser();
     $blocks = $parser->parse("???")->blocks;
     $this->assertEquals("???", $blocks[0]->content);
@@ -141,7 +141,7 @@ class ParserTest extends TestCase {
   /**
    * @depends testSimpleBlockCount
    */
-  public function testEmpty() {
+  public function testEmpty(): void {
     $parser = new Parser();
     $blocks = $parser->parse("#test\n\n#test")->blocks;
     $this->assertEquals("", $blocks[1]->content);
@@ -150,18 +150,18 @@ class ParserTest extends TestCase {
   /**
    * @depends testEmpty
    */
-  public function testEmptyLast() {
+  public function testEmptyLast(): void {
     $parser = new Parser();
     $blocks = $parser->parse("#test\n")->blocks;
     $this->assertEquals("", $blocks[1]->content);
   }
 
-  public function testEmptyFile() {
+  public function testEmptyFile(): void {
     $parser = new Parser();
 
     $blocks = $parser->parse("")->blocks;
 
-    $this->assertEquals(1, count($blocks));
+    $this->assertCount(1, $blocks);
     $this->assertEquals("", $blocks[0]->content);
   }
 }

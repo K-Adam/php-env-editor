@@ -2,23 +2,24 @@
 
 namespace EnvEditor;
 
+use EnvEditor\EnvFile\Block;
 use EnvEditor\EnvFile\Visitor;
 use EnvEditor\EnvFile\EOLType;
 use EnvEditor\EnvFile\Block\Variable as VariableBlock;
 
 class EnvFile {
 
-  /** @var string */
-  public $EOL = "\n";
+  public string $EOL = "\n";
 
-  /** @var \EnvEditor\EnvFile\Block[] */
-  public $blocks = [];
+  /** @var Block[] */
+  public array $blocks = [];
 
   function __construct() {
     $this->EOL = EOLType::UNIX;
   }
 
-  public function visitBlocks(Visitor $visitor) {
+  public function visitBlocks(Visitor $visitor): void
+  {
     foreach($this->blocks as $block) {
       $block->visit($visitor);
     }
@@ -29,7 +30,7 @@ class EnvFile {
    */
   public function getVariableBlocks(): array {
     return array_values(array_filter($this->blocks, function($block){
-      return $block instanceof \EnvEditor\EnvFile\Block\Variable;
+      return $block instanceof VariableBlock;
     }));
   }
 
@@ -43,10 +44,11 @@ class EnvFile {
     return null;
   }
 
-  public function putVariable(VariableBlock $variable) {
+  public function putVariable(VariableBlock $variable): void
+  {
     foreach($this->blocks as $i => $block) {
 
-      if(!$block instanceof \EnvEditor\EnvFile\Block\Variable) continue;
+      if(!$block instanceof VariableBlock) continue;
 
       if($block->key->content == $variable->key->content) {
         $this->blocks[$i] = $variable;
@@ -72,7 +74,8 @@ class EnvFile {
     return $variable ? $variable->value->content : "";
   }
 
-  public function setValue(string $key, string $content) {
+  public function setValue(string $key, string $content): void
+  {
     $variable = $this->findVariable($key);
     if(!$variable) {
       $variable = new VariableBlock();

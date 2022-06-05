@@ -7,14 +7,10 @@ use EnvEditor\EnvFile\Visitor;
 
 class Comment extends Block {
 
-  /** @var string */
-  public $text="";
-
-  function __construct($text = "") {
-    $this->text = $text;
+  function __construct(public string $text = "") {
   }
 
-  public function visit(Visitor $visitor) {
+  public function visit(Visitor $visitor): void {
     $visitor->visitComment($this);
   }
 

@@ -11,7 +11,7 @@ use EnvEditor\EnvFile\Block\Variable\Value;
 
 class EnvFileTest extends TestCase {
 
-  public function testFindVariable() {
+  public function testFindVariable(): void {
 
     $file = new EnvFile();
 
@@ -29,7 +29,7 @@ class EnvFileTest extends TestCase {
   /**
    * @depends testFindVariable
    */
-  public function testPutVariable() {
+  public function testPutVariable(): void {
 
     $file = new EnvFile();
 
@@ -40,14 +40,14 @@ class EnvFileTest extends TestCase {
     $v2 = new VariableBlock(new Key("A"), new Value("C"));
     $file->putVariable($v2);
     $this->assertEquals($v2, $file->findVariable("A"));
-    $this->assertEquals(1, count($file->blocks));
+    $this->assertCount(1, $file->blocks);
 
   }
 
   /**
    * @depends testFindVariable
    */
-  public function testRemoveVariable() {
+  public function testRemoveVariable(): void {
 
     $file = new EnvFile();
 
@@ -60,14 +60,14 @@ class EnvFileTest extends TestCase {
 
     $this->assertEquals(null, $file->findVariable("A"));
     $this->assertEquals($v2, $file->findVariable("C"));
-    $this->assertEquals(1, count($file->blocks));
+    $this->assertCount(1, $file->blocks);
 
   }
 
   /**
    * @depends testFindVariable
    */
-  public function testGetValue() {
+  public function testGetValue(): void {
 
     $file = new EnvFile();
 
@@ -84,7 +84,7 @@ class EnvFileTest extends TestCase {
   /**
    * @depends testPutVariable
    */
-  public function testSetValue() {
+  public function testSetValue(): void {
 
     $file = new EnvFile();
 
@@ -98,7 +98,7 @@ class EnvFileTest extends TestCase {
   /**
    * @depends testSetValue
    */
-  public function testSetValueQuoted() {
+  public function testSetValueQuoted(): void {
 
     $file = new EnvFile();
 

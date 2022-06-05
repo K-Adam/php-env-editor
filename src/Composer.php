@@ -7,15 +7,13 @@ use EnvEditor\Composer\Visitor;
 class Composer
 {
 
-    public ?string $EOL = null;
-
-    public function compose(EnvFile $file): string
+    public function compose(EnvFile $file, ?string $overrideEOL = null): string
     {
         $visitor = new Visitor();
 
         $file->visitBlocks($visitor);
 
-        $EOL = $this->EOL ?? $file->EOL;
+        $EOL = $overrideEOL ?? $file->EOL;
         return implode($EOL, $visitor->results);
     }
 

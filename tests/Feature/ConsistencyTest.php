@@ -47,7 +47,7 @@ class ConsistencyTest extends TestCase
         $contentPath = __DIR__ . "/Asset/example.env";
         $content = file_get_contents($contentPath);
 
-        $tmpPath = dirname(dirname(__DIR__)) . "/.tmp";
+        $tmpPath = dirname(__DIR__, 2) . "/.tmp";
 
         if (!is_dir($tmpPath)) {
             mkdir($tmpPath);

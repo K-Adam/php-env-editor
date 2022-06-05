@@ -109,7 +109,4 @@ class EnvFile
         file_put_contents($path, $content);
     }
 
-    // Private methods
-
-
 }

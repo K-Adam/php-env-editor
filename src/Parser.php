@@ -19,7 +19,7 @@ class Parser
 
         $file = new EnvFile();
 
-        $file->EOL = $this->EOL ?? $this->detectEOLType($content);
+        $file->EOL = $this->EOL ?? EOLType::detect($content);
 
         $blockStart = "^";
         $blockEnd = "(?:{$file->EOL}|$)";
@@ -102,19 +102,6 @@ class Parser
         }
 
         return $file;
-
-    }
-
-    public function detectEOLType(string $content, string $default = EOLType::UNIX): string
-    {
-
-        if (str_contains($content, EOLType::WINDOWS)) {
-            return EOLType::WINDOWS;
-        } elseif (str_contains($content, EOLType::UNIX)) {
-            return EOLType::UNIX;
-        }
-
-        return $default;
 
     }
 

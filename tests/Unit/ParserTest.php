@@ -8,26 +8,7 @@ use Tests\TestCase;
 
 class ParserTest extends TestCase
 {
-
-    public function testDetectEOLType(): void
-    {
-        $parser = new Parser();
-
-        $win = "#test\r\n#test";
-        $unix = "#test\n#test";
-        $empty = "";
-
-        $this->assertEquals(EOLType::WINDOWS, $parser->detectEOLType($win));
-        $this->assertEquals(EOLType::UNIX, $parser->detectEOLType($unix));
-        $this->assertEquals(EOLType::UNIX, $parser->detectEOLType($empty));
-        $this->assertEquals(EOLType::UNIX, $parser->detectEOLType($empty, EOLType::UNIX));
-        $this->assertEquals(EOLType::WINDOWS, $parser->detectEOLType($empty, EOLType::WINDOWS));
-
-    }
-
-    /**
-     * @depends testDetectEOLType
-     */
+    
     public function testFileEOLType(): void
     {
 

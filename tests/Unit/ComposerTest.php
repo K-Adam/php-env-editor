@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit;
 
 use EnvEditor\Composer;
 use EnvEditor\EnvFile;
 use EnvEditor\EnvFile\Block\Comment as CommentBlock;
 use EnvEditor\EnvFile\EOLType;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class ComposerTest extends TestCase
 {

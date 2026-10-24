@@ -4,6 +4,5 @@ composer.lock
 .idea
 *.bak
 
-.phpunit.result.cache
-
-.tmp
+/.phpunit.cache
+/coverage

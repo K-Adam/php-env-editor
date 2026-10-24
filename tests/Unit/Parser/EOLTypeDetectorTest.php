@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit\Parser;
 
 use EnvEditor\EnvFile\EOLType;
 use EnvEditor\Parser\EOLTypeDetector;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class EOLTypeDetectorTest extends TestCase
 {

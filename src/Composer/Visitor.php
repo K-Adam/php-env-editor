@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EnvEditor\Composer;
 
 use EnvEditor\EnvFile\Block\Comment as CommentBlock;
@@ -18,7 +20,7 @@ class Visitor extends EnvVisitor
         $this->addLine("#" . $block->text);
     }
 
-    private function addLine(string $line)
+    private function addLine(string $line): void
     {
         $this->results[] = $line;
     }
@@ -28,10 +30,10 @@ class Visitor extends EnvVisitor
         $keyStr = "{$block->key->leftPad}{$block->key->content}{$block->key->rightPad}";
         $valueStr = "{$block->value->leftPad}{$block->value->getContentWithQuotes()}{$block->value->rightPad}";
 
-        $this->addLine("$keyStr=$valueStr");
-    }
+        $commentStr = $block->comment === null ? "" : "#{$block->comment}";
 
-    //
+        $this->addLine("$keyStr=$valueStr$commentStr");
+    }
 
     public function visitUnknown(UnknownBlock $block): void
     {

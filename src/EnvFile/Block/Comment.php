@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EnvEditor\EnvFile\Block;
 
 use EnvEditor\EnvFile\Block;
@@ -8,7 +10,7 @@ use EnvEditor\EnvFile\Visitor;
 class Comment extends Block
 {
 
-    function __construct(public string $text = "")
+    public function __construct(public string $text = "")
     {
     }
 

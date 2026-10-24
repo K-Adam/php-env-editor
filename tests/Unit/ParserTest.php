@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit;
 
+use EnvEditor\EnvFile\Block\Unknown as UnknownBlock;
 use EnvEditor\Parser;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class ParserTest extends TestCase
 {
@@ -28,9 +31,6 @@ class ParserTest extends TestCase
         $this->assertCount(2, $this->parser->parse($content)->blocks);
     }
 
-    /**
-     * @depends testSimpleBlockCount
-     */
     public function testComplexBlockCount(): void
     {
         $multilineString = "#test{$this->newLine}X=VALUE{$this->newLine}Y='foo bar'{$this->newLine}Z=\"foo{$this->newLine}bar\"";
@@ -40,9 +40,6 @@ class ParserTest extends TestCase
         $this->assertCount(3, $this->parser->parse($invalidValueString)->blocks);
     }
 
-    /**
-     * @depends testSimpleBlockCount
-     */
     public function testCommentBlockText(): void
     {
         $blocks = $this->parser->parse("#test1{$this->newLine}#test2")->blocks;
@@ -52,9 +49,6 @@ class ParserTest extends TestCase
 
     }
 
-    /**
-     * @depends testComplexBlockCount
-     */
     public function testVariableBlockContent(): void
     {
         $multilineString = "X=VALUE{$this->newLine}Y='foo bar'{$this->newLine}Z=\"foo{$this->newLine}bar\"";
@@ -73,9 +67,6 @@ class ParserTest extends TestCase
 
     }
 
-    /**
-     * @depends testSimpleBlockCount
-     */
     public function testVariableWhiteSpaces(): void
     {
         $blocks = $this->parser->parse("X =foo{$this->newLine}\tY = 'bar'  ")->blocks;
@@ -97,27 +88,44 @@ class ParserTest extends TestCase
         $this->assertEquals("  ", $blocks[1]->value->rightPad);
     }
 
-    /**
-     * @depends testSimpleBlockCount
-     */
+    public function testInlineComment(): void
+    {
+        $blocks = $this->parser->parse("A=foo # note")->blocks;
+        $this->assertEquals("foo", $blocks[0]->value);
+        $this->assertEquals(" ", $blocks[0]->value->rightPad);
+        $this->assertSame(" note", $blocks[0]->comment);
+
+        $blocks = $this->parser->parse("A=\"x y\"#c")->blocks;
+        $this->assertEquals("x y", $blocks[0]->value);
+        $this->assertSame("c", $blocks[0]->comment);
+
+        $blocks = $this->parser->parse("A=#c")->blocks;
+        $this->assertEquals("", $blocks[0]->value);
+        $this->assertSame("c", $blocks[0]->comment);
+    }
+
+    public function testHashInsideUnquotedValue(): void
+    {
+        $blocks = $this->parser->parse("A=foo#bar")->blocks;
+        $this->assertEquals("foo#bar", $blocks[0]->value);
+        $this->assertNull($blocks[0]->comment);
+
+        $blocks = $this->parser->parse("A=foo# bar")->blocks;
+        $this->assertInstanceOf(UnknownBlock::class, $blocks[0]);
+    }
+
     public function testUnknown(): void
     {
         $blocks = $this->parser->parse("???")->blocks;
         $this->assertEquals("???", $blocks[0]->content);
     }
 
-    /**
-     * @depends testSimpleBlockCount
-     */
     public function testEmpty(): void
     {
         $blocks = $this->parser->parse("#test{$this->newLine}{$this->newLine}#test")->blocks;
         $this->assertEquals("", $blocks[1]->content);
     }
 
-    /**
-     * @depends testEmpty
-     */
     public function testEmptyLast(): void
     {
         $blocks = $this->parser->parse("#test{$this->newLine}")->blocks;

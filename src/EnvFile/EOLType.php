@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EnvEditor\EnvFile;
 
 final class EOLType
 {
 
-    const WINDOWS = "\r\n";
-    const UNIX = "\n";
-    
+    public const WINDOWS = "\r\n";
+    public const UNIX = "\n";
+
 }

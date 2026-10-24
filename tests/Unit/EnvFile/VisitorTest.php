@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit\EnvFile;
 
 use EnvEditor\EnvFile;
 use EnvEditor\EnvFile\Block\Comment as CommentBlock;
 use EnvEditor\EnvFile\Block\Variable as VariableBlock;
 use EnvEditor\EnvFile\Visitor;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class VisitorTest extends TestCase
 {

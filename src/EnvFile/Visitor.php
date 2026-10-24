@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EnvEditor\EnvFile;
 
 use EnvEditor\EnvFile\Block\Comment as CommentBlock;

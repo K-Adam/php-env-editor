@@ -1,12 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EnvEditor;
 
 use EnvEditor\EnvFile\Block;
+use EnvEditor\EnvFile\Block\Unknown as UnknownBlock;
 use EnvEditor\EnvFile\Block\Variable as VariableBlock;
+use EnvEditor\EnvFile\Block\Variable\Key;
+use EnvEditor\EnvFile\Block\Variable\Value;
 use EnvEditor\EnvFile\EOLType;
 use EnvEditor\EnvFile\Visitor;
-use EnvEditor\Parser\EOLTypeDetector;
+use InvalidArgumentException;
+use RuntimeException;
 
 class EnvFile
 {
@@ -14,16 +20,18 @@ class EnvFile
     /** @var Block[] */
     public array $blocks = [];
 
-    function __construct(public string $EOL = EOLType::UNIX)
+    public function __construct(public string $EOL = EOLType::UNIX)
     {
     }
 
     public static function loadFrom(string $path): EnvFile
     {
-        $parser = new Parser(new EOLTypeDetector());
-        $content = file_get_contents($path);
+        $content = @file_get_contents($path);
+        if ($content === false) {
+            throw new RuntimeException("Unable to read file: $path");
+        }
 
-        return $parser->parse($content);
+        return (new Parser())->parse($content);
     }
 
     public function visitBlocks(Visitor $visitor): void
@@ -35,17 +43,13 @@ class EnvFile
 
     public function putVariable(VariableBlock $variable): void
     {
-        foreach ($this->blocks as $i => $block) {
+        $existing = $this->findVariable($variable->key->content);
 
-            if (!$block instanceof VariableBlock) continue;
-
-            if ($block->key->content == $variable->key->content) {
-                $this->blocks[$i] = $variable;
-                return;
-            }
+        if ($existing) {
+            $this->blocks[array_search($existing, $this->blocks, true)] = $variable;
+        } else {
+            $this->appendBlock($variable);
         }
-
-        $this->blocks[] = $variable;
     }
 
     public function removeVariableKey(string $key): ?VariableBlock
@@ -53,7 +57,7 @@ class EnvFile
         $variable = $this->findVariable($key);
         if (!$variable) return null;
 
-        $index = array_search($variable, $this->blocks);
+        $index = array_search($variable, $this->blocks, true);
         array_splice($this->blocks, $index, 1);
         return $variable;
     }
@@ -61,7 +65,7 @@ class EnvFile
     public function findVariable(string $key): ?VariableBlock
     {
         foreach ($this->getVariableBlocks() as $block) {
-            if ($block->key == $key) {
+            if ($block->key->content === $key) {
                 return $block;
             }
         }
@@ -74,9 +78,7 @@ class EnvFile
      */
     public function getVariableBlocks(): array
     {
-        return array_values(array_filter($this->blocks, function ($block) {
-            return $block instanceof VariableBlock;
-        }));
+        return array_values(array_filter($this->blocks, fn($block) => $block instanceof VariableBlock));
     }
 
     public function getValue(string $key): string
@@ -90,23 +92,38 @@ class EnvFile
 
     public function setValue(string $key, string $content): void
     {
-        $variable = $this->findVariable($key);
-        if (!$variable) {
-            $variable = new VariableBlock();
-            $variable->key->content = $key;
-
-            $this->blocks[] = $variable;
+        if (!preg_match('/^' . Key::PATTERN . '$/D', $key)) {
+            throw new InvalidArgumentException("Invalid key: '$key'");
         }
 
-        $variable->value->setContent($content);
+        $variable = $this->findVariable($key);
+        if ($variable) {
+            $variable->value->setContent($content);
+            return;
+        }
+
+        $this->appendBlock(new VariableBlock(new Key($key), new Value($content)));
     }
 
     public function saveTo(string $path): void
     {
-        $composer = new Composer();
-        $content = $composer->compose($this);
+        $content = (new Composer())->compose($this);
 
-        file_put_contents($path, $content);
+        if (@file_put_contents($path, $content, LOCK_EX) === false) {
+            throw new RuntimeException("Unable to write file: $path");
+        }
+    }
+
+    /** Keeps a trailing EOL at the end of the file */
+    private function appendBlock(Block $block): void
+    {
+        $last = end($this->blocks);
+
+        if ($last instanceof UnknownBlock && $last->content === "") {
+            array_splice($this->blocks, -1, 0, [$block]);
+        } else {
+            $this->blocks[] = $block;
+        }
     }
 
 }

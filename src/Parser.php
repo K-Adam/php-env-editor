@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EnvEditor;
 
 use EnvEditor\EnvFile\Block\Comment as CommentBlock;
@@ -7,14 +9,13 @@ use EnvEditor\EnvFile\Block\Unknown as UnknownBlock;
 use EnvEditor\EnvFile\Block\Variable as VariableBlock;
 use EnvEditor\EnvFile\Block\Variable\Key as VariableKey;
 use EnvEditor\EnvFile\Block\Variable\Value as VariableValue;
-use EnvEditor\EnvFile\EOLType;
 use EnvEditor\Parser\EOLTypeDetector;
+use RuntimeException;
 
 class Parser
 {
 
-
-    public function __construct(private EOLTypeDetector $EOLTypeDetector)
+    public function __construct(private EOLTypeDetector $EOLTypeDetector = new EOLTypeDetector())
     {
     }
 
@@ -24,7 +25,7 @@ class Parser
         $file = new EnvFile();
 
         $file->EOL = $this->EOLTypeDetector->detect($content);
-        $pregEOL = preg_quote($file->EOL);
+        $pregEOL = preg_quote($file->EOL, "/");
 
         $blockStart = "^";
         $blockEnd = "(?:$pregEOL|$)";
@@ -36,63 +37,44 @@ class Parser
         $notEOLNotSingleQuote = "(?:(?!$pregEOL)[^'])";
         $notDoubleQuote = "[^\"]";
 
-        $variableKey = "[a-zA-Z0-9_.]+";
-        $variableValue = "\"$notDoubleQuote*\"|'$notEOLNotSingleQuote*'|\S*";
+        $variableKey = VariableKey::PATTERN;
+        // Unquoted: can't start with "#"; possessive so "#" inside it (A=foo#bar) stays part of the value
+        $notEOLNonSpace = "(?:(?!$pregEOL)\S)";
+        $variableValue = "\"($notDoubleQuote*)\"|'($notEOLNotSingleQuote*)'|((?:(?!#)$notEOLNonSpace*+)?)";
 
-        $variable = "($notEOLWhiteSpace*)($variableKey)($notEOLWhiteSpace*)=($notEOLWhiteSpace*)($variableValue)($notEOLWhiteSpace*)";
+        $variable = "($notEOLWhiteSpace*)($variableKey)($notEOLWhiteSpace*)=($notEOLWhiteSpace*)(?:$variableValue)($notEOLWhiteSpace*)(?:$comment)?";
 
         $matchedString = "";
 
         $parserContent = $content;
         while (strlen($parserContent) > 0) {
-            $block = null;
             $match = [];
 
-            if (preg_match("/$blockStart(?:$comment)$blockEnd/", $parserContent, $match)) {
-                $commentText = $match[1];
+            if (preg_match("/$blockStart(?:$comment)$blockEnd/D", $parserContent, $match)) {
+                $block = new CommentBlock($match[1]);
+            } elseif (preg_match("/$blockStart(?:$variable)$blockEnd/sD", $parserContent, $match, PREG_UNMATCHED_AS_NULL)) {
 
-                $block = new CommentBlock();
-                $block->text = $commentText;
-            } elseif (preg_match("/$blockStart(?:$variable)$blockEnd/s", $parserContent, $match)) {
+                [$vValue, $vQuote] = match (true) {
+                    $match[5] !== null => [$match[5], '"'],
+                    $match[6] !== null => [$match[6], "'"],
+                    default => [$match[7], ""],
+                };
 
-                $vKey = $match[2];
-                $vValue = $match[5];
-
-                $vKeyPadLeft = $match[1];
-                $vKeyPadRight = $match[3];
-                $vValuePadLeft = $match[4];
-                $vValuePadRight = $match[6];
-
-                $vQuote = "";
-                if (strlen($vValue) > 0) {
-                    if ($vValue[0] == '"') {
-                        $vValue = substr($vValue, 1, strlen($vValue) - 2);
-                        $vQuote = '"';
-                    } elseif ($vValue[0] == "'") {
-                        $vValue = substr($vValue, 1, strlen($vValue) - 2);
-                        $vQuote = "'";
-                    }
-                }
-
-                $bKey = new VariableKey();
-                $bKey->content = $vKey;
-                $bKey->leftPad = $vKeyPadLeft;
-                $bKey->rightPad = $vKeyPadRight;
+                $bKey = new VariableKey($match[2]);
+                $bKey->leftPad = $match[1];
+                $bKey->rightPad = $match[3];
 
                 $bValue = new VariableValue();
                 $bValue->content = $vValue;
                 $bValue->quote = $vQuote;
-                $bValue->leftPad = $vValuePadLeft;
-                $bValue->rightPad = $vValuePadRight;
+                $bValue->leftPad = $match[4];
+                $bValue->rightPad = $match[8];
 
-                $block = new VariableBlock();
-                $block->key = $bKey;
-                $block->value = $bValue;
+                $block = new VariableBlock($bKey, $bValue, $match[9]);
+            } elseif (preg_match("/$blockStart($notEOLChar*)$blockEnd/sD", $parserContent, $match)) {
+                $block = new UnknownBlock($match[1]);
             } else {
-                preg_match("/$blockStart($notEOLChar*)$blockEnd/s", $parserContent, $match);
-
-                $uContent = $match[1];
-                $block = new UnknownBlock($uContent);
+                throw new RuntimeException("Failed to parse .env content: " . preg_last_error_msg());
             }
 
             $file->blocks[] = $block;
@@ -102,7 +84,7 @@ class Parser
 
         }
 
-        if ((str_ends_with($matchedString, $file->EOL)) || strlen($content) == 0) {
+        if (str_ends_with($matchedString, $file->EOL) || strlen($content) == 0) {
             $file->blocks[] = new UnknownBlock();
         }
 

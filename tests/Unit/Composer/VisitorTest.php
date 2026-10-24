@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Unit\Composer;
 
 use EnvEditor\Composer\Visitor;
@@ -8,7 +10,7 @@ use EnvEditor\EnvFile\Block\Unknown as UnknownBlock;
 use EnvEditor\EnvFile\Block\Variable as VariableBlock;
 use EnvEditor\EnvFile\Block\Variable\Key as VariableKey;
 use EnvEditor\EnvFile\Block\Variable\Value as VariableValue;
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
 
 class VisitorTest extends TestCase
 {
@@ -36,9 +38,6 @@ class VisitorTest extends TestCase
         $this->assertEquals(["X=Y"], $visitor->results);
     }
 
-    /**
-     * @depends testVariable
-     */
     public function testQuotedVariable(): void
     {
         $visitor = new Visitor();
@@ -52,9 +51,6 @@ class VisitorTest extends TestCase
         $this->assertEquals(["X='Y'"], $visitor->results);
     }
 
-    /**
-     * @depends testVariable
-     */
     public function testPaddedVariable(): void
     {
         $visitor = new Visitor();
@@ -75,7 +71,18 @@ class VisitorTest extends TestCase
         $this->assertEquals([" X  =\tY "], $visitor->results);
     }
 
-    public function testUnknown()
+    public function testCommentedVariable(): void
+    {
+        $visitor = new Visitor();
+
+        $variable = new VariableBlock(new VariableKey("X"), new VariableValue("Y"), " c");
+        $variable->value->rightPad = " ";
+        $visitor->visitVariable($variable);
+
+        $this->assertEquals(["X=Y # c"], $visitor->results);
+    }
+
+    public function testUnknown(): void
     {
         $visitor = new Visitor();
 

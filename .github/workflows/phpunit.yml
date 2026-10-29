@@ -1,6 +1,13 @@
 name: PHPUnit
 
-on: [ push, pull_request ]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -16,10 +23,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php-version }}
           coverage: none
@@ -32,3 +41,7 @@ jobs:
 
       - name: Run tests
         run: composer test
+
+      - name: Audit dependencies
+        if: matrix.php-version == '8.5'
+        run: composer audit --abandoned=report
